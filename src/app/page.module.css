@@ -1,0 +1,27 @@
+.customButton {
+    background-color: red; 
+    border: none; 
+    color: white; 
+    padding: 12px 24px;
+    text-align: center; 
+    text-decoration: none; 
+    display: inline-block; 
+    font-size: 16px; 
+    font-weight: bold; 
+    margin: 10px 2px; 
+    cursor: pointer; 
+    border-radius: 12px; 
+    transition-duration: 0.4s; 
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); 
+}
+
+.customButton:hover {
+    background-color: black;
+    box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.3); 
+}
+
+.customButton:active {
+    background-color: red; 
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2); 
+    transform: translateY(2px); 
+}
