@@ -74,9 +74,9 @@ export default function Decks() {
 
             </div>
 
-            <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {decks.map((deck) =>
-                    <DeckCard title={deck.title} name={"Alvin Shin"} />
+            <div className="grid grid-cols-3 justify-center items-center gap-[2rem]">
+                {decks.map((deck, index) =>
+                    <DeckCard key={index} title={deck.title} name={"Alvin Shin"} />
                 )}
             </div>
 
