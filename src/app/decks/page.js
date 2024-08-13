@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import styles from "../page.module.css";
+import Link from "next/link";
 
 import DeckCard from "../components/deck";
 import Dropdown from "../components/dropdown";
@@ -57,24 +57,34 @@ export default function Decks() {
             </Dialog>
 
             <div className="p-[2rem] w-full flex flex-row justify-between items-center">
-                <h1 className="text-[50px] font-[500] tracking-[1.5px]">Alvin's Decks {/* display the user's name */}
-                    <span className="text-[20px]">{decks.length} Flashcard Deck{(decks.length > 1) ? "s" : ""}</span> {/* insert the number of flashcards a user has */}
-                </h1>
+                <header className="absolute inset-x-0 top-0 z-50">
+                    <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+                        <div className="flex lg:flex-1 flex-col justify-start items-start space-y-[0.5rem]">
+                            <Link href="/" className="-m-1.5 p-1.5">
+                                StudySwipe
+                            </Link>
+                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">Alvin's Decks {/* display the user's name */}
+                                <span className="text-[20px]">{decks.length} Flashcard Deck{(decks.length > 1) ? "s" : ""}</span> {/* insert the number of flashcards a user has */}
+                            </h1>
+                        </div>
+                        <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
+                            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => setOpen(true)} />
+                            <Dropdown label={"Menu"}>
+                                <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are {userName}</p>
+                                <Link href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
+                                <form method="POST" action="#" role="none">
+                                    <button type="submit" className="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-3">Sign out</button>
+                                </form>
+                            </Dropdown>
+                        </div>
+                    </nav>
+                </header>
 
-                <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
-                    <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => setOpen(true)} />
-                    <Dropdown label={"Menu"}>
-                        <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are {userName}</p>
-                        <a href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
-                        <form method="POST" action="#" role="none">
-                            <button type="submit" className="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
-                        </form>
-                    </Dropdown>
-                </div>
+
 
             </div>
 
-            <div className="grid grid-cols-3 justify-center items-center gap-[2rem]">
+            <div className="mt-[5rem] flex justify-center items-center gap-[2rem]">
                 {decks.map((deck, index) =>
                     <DeckCard key={index} title={deck.title} name={"Alvin Shin"} />
                 )}

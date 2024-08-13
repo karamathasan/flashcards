@@ -37,7 +37,7 @@ const Dropdown = (props) => {
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="menu-button"
-                    tabindex="-1"
+                    tabIndex="-1"
                 >
                     <div className="py-1" role="none">
                         {props.children}

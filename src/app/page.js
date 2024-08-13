@@ -20,7 +20,7 @@ const includedFeatures = [
 export default function Home() {
   return (
     <main className={"w-screen h-full min-h-screen flex flex-col justify-start items-center "}>
-      <div className="">
+      <div>
         <header className="absolute inset-x-0 top-0 z-50">
           <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
             <div className="flex lg:flex-1">
@@ -35,8 +35,8 @@ export default function Home() {
             </div>
           </nav>
         </header>
-
-        <div className="relative isolate px-6 pt-14 lg:px-8" id="plans">
+        
+        <div className="relative isolate px-6 pt-14 lg:px-8">
           <div
             aria-hidden="true"
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
