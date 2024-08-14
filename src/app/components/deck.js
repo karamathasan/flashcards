@@ -1,6 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 const DeckCard = (props) => {
     return (
@@ -9,7 +10,9 @@ const DeckCard = (props) => {
                 <h1 className="capitalize text-[30px] ">{props.title}</h1>
                 <p>12 Cards</p>
             </div>
-            <FontAwesomeIcon className={"cursor-pointer text-[2.5rem]"} icon={faCircleArrowRight} />
+            <Link href={`/decks/${props.title}`}>
+                <FontAwesomeIcon className={"cursor-pointer text-[2.5rem]"} icon={faCircleArrowRight} />
+            </Link>
 
         </div>
     )

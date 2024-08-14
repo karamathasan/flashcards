@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {useRouter} from "next/router";
 
 import DeckCard from "../components/deck";
 import Dropdown from "../components/dropdown";
@@ -11,15 +12,32 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 
-const decks = [
-    { title: "biology" },
-    { title: "CSE 214" },
-]
+import { db } from "../firebase";
+import { doc, collection, getDoc, getDocs } from "firebase/firestore";
+
+// const decks = [
+//     { title: "biology" },
+//     { title: "CSE 214" },
+// ]
 const userName = "Alvin Shin"
 
 export default function Decks() {
+    // const router = useRouter()
     const [open, setOpen] = useState(false)
     const [newTitle, setNewTitle] = useState("")
+
+    const [decks, setDecks] = useState([
+        { title: "biology" },
+        { title: "CSE 214" },
+    ])
+
+    const createNewDeck = ()=>{
+        console.log("yuh")
+        setDecks([...decks,{title:newTitle}])
+    }
+
+    useEffect(()=>{
+    },[])
 
     return (
         <main className={"w-screen h-full min-h-screen flex flex-col justify-start items-center"}>
@@ -47,7 +65,7 @@ export default function Decks() {
                                 />
                                 <div className="flex flex-row justify-center items-center space-x-[1rem]">
                                     <button type="button" onClick={() => setOpen(false)} className="text-[#333] bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Cancel</button>
-                                    <button type="submit" className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new deck</button>
+                                    <button type="submit" onClick={createNewDeck}className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new deck</button>
                                 </div>
                             </div>
 
