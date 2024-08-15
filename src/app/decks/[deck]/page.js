@@ -6,7 +6,6 @@ import { doc, getDoc, getDocs, collection } from "firebase/firestore";
 import { isLoaded,isSignedIn,useUser } from "@clerk/nextjs";
 
 
-
 export default function Deck({params}) {
     // access current user data
     const { isSignedIn, isLoaded, user } = useUser();
