@@ -15,9 +15,9 @@ import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { db } from "../firebase";
 import { doc, collection, getDoc, getDocs, query } from "firebase/firestore";
 
-import { useUser } from "@clerk/nextjs";
+import { ClerkProvider, useUser } from "@clerk/nextjs";
 
-export default function Decks() {
+function Decks() {
     // const router = useRouter()
     const { isSignedIn, isLoaded, user } = useUser();
 
@@ -55,6 +55,7 @@ export default function Decks() {
     },[])
 
     return (
+        <ClerkProvider>
         <main className={"w-screen h-full min-h-screen flex flex-col justify-start items-center"}>
             <Dialog open={open} onClose={setOpen} className="relative z-10">
                 <DialogBackdrop
@@ -125,5 +126,14 @@ export default function Decks() {
 
 
         </main>
+        </ClerkProvider>
     );
+}
+
+export default function DecksWrapper(){
+    return (
+        <ClerkProvider>
+            <Decks></Decks>
+        </ClerkProvider>
+    )
 }

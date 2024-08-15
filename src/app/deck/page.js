@@ -1,6 +1,7 @@
 'use client'
 import { useEffect } from "react";
 import Flashcard from "../components/flashcard";
+import { useState } from "react";
 
 //////////////////////// THIS MAY NO LONGER BE NEEDED! ////////////////////////
 

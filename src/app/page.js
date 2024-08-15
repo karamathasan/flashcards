@@ -3,12 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faBars, faX } from "@fortawesome/free-solid-svg-icons";
 import { DialogPanel, Dialog } from "@headlessui/react";
+import { ClerkProvider, SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs";
+
+import { db } from "./firebase"
+import { doc, getDoc, setDoc, getDocs, collection } from "firebase/firestore";
+import { useUser } from "@clerk/nextjs";
 
 const includedFeatures = [
   'Private forum access',
@@ -17,7 +22,32 @@ const includedFeatures = [
   'Official member t-shirt',
 ]
 
-export default function Home() {
+function Home() {
+  const {isSignedIn, user} = useUser()
+
+  const addUser = async()=>{
+    if (isSignedIn){
+      console.log(user.id)
+      const userDoc = doc(collection(db,'users'), user.id)
+      const userSnap = await getDoc(userDoc)
+      if (!userSnap.exists()){
+        console.log("user exists")
+        return 
+      } 
+      try{
+        await setDoc(userDoc, {plan:"free"})
+      }
+      catch (error){
+        console.error(error)
+      }
+      console.log("user added")
+    }
+  }
+  
+  useEffect(()=>{
+    addUser()
+  }, [isSignedIn])
+
   return (
     <main className={"w-screen h-full min-h-screen flex flex-col justify-start items-center "}>
       <div>
@@ -29,9 +59,20 @@ export default function Home() {
               </Link>
             </div>
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-              <Link href="/sign-up" className="text-sm font-semibold leading-6 text-gray-900">
-                Sign in <span aria-hidden="true">&rarr;</span>
-              </Link>
+              <SignedIn>
+                <SignOutButton>
+                  <div className="text-sm font-semibold leading-6 text-gray-900">
+                  {/* <Link className="text-sm font-semibold leading-6 text-gray-900"> */}
+                    Log out <span aria-hidden="true">&rarr;</span>
+                  {/* </Link> */}
+                  </div>
+                </SignOutButton>
+              </SignedIn>
+              <SignedOut>
+                <Link href="/sign-up" className="text-sm font-semibold leading-6 text-gray-900">
+                  Sign up <span aria-hidden="true">&rarr;</span>
+                </Link>
+              </SignedOut>
             </div>
           </nav>
         </header>
@@ -145,4 +186,12 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+export default function HomeWrapper(){
+  return (
+    <ClerkProvider>
+      <Home></Home>
+    </ClerkProvider>
+  )
 }

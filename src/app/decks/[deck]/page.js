@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import Flashcard from "@/app/components/flashcard";
 import { db } from "@/app/firebase";
 import { doc, getDoc, getDocs, collection } from "firebase/firestore";
-import { isLoaded,isSignedIn,useUser } from "@clerk/nextjs";
+import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
 
 
-
-export default function Deck({params}) {
+function Deck({params}) {
     // access current user data
     const { isSignedIn, isLoaded, user } = useUser();
     const [flashcards, setFlashcards] = useState([
@@ -44,5 +43,13 @@ export default function Deck({params}) {
                 )}
             </div>
         </main>
+    )
+}
+
+export default function DeckWrapper(){
+    return (
+        <ClerkProvider>
+            <Deck></Deck>
+        </ClerkProvider>
     )
 }
