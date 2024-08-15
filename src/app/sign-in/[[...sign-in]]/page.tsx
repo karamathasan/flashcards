@@ -1,6 +1,6 @@
 import { ClerkProvider, SignIn } from "@clerk/nextjs";
 import React from "react";
-import { shadesOfPurple,dark,neobrutalism } from "@clerk/themes";
+import { shadesOfPurple, dark, neobrutalism } from "@clerk/themes";
 
 export default function Page() {
     return (

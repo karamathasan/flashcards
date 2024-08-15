@@ -13,30 +13,45 @@ import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 
 import { db } from "../firebase";
-import { doc, collection, getDoc, getDocs } from "firebase/firestore";
+import { doc, collection, getDoc, getDocs, query } from "firebase/firestore";
 
-// const decks = [
-//     { title: "biology" },
-//     { title: "CSE 214" },
-// ]
-const userName = "Alvin Shin"
+import { useUser } from "@clerk/nextjs";
 
 export default function Decks() {
     // const router = useRouter()
+    const { isSignedIn, isLoaded, user } = useUser();
+
     const [open, setOpen] = useState(false)
     const [newTitle, setNewTitle] = useState("")
 
     const [decks, setDecks] = useState([
-        { title: "biology" },
-        { title: "CSE 214" },
+        // { title: "biology" },
+        // { title: "CSE 214" },
     ])
 
-    const createNewDeck = ()=>{
-        console.log("yuh")
+    const addNewDeck = ()=>{
         setDecks([...decks,{title:newTitle}])
     }
 
+    const updateDecks = async ()=>{
+        const userRef = doc(collection(db,'users'),user.id)
+        const userSnap = await getDoc(userRef)
+        if (!userSnap.exists()){
+            throw new Error("user not found in databse!")
+        }
+        const docs = await getDocs(query(collection(db,'users',user.id,'flashcards')))
+        const decksArr = []
+        docs.forEach((doc)=>{
+            decksArr.push({
+                id: doc.id,
+                ...doc.data()
+            })
+        })
+        setDecks(decksArr)
+    }
+
     useEffect(()=>{
+        updateDecks()
     },[])
 
     return (
@@ -65,7 +80,7 @@ export default function Decks() {
                                 />
                                 <div className="flex flex-row justify-center items-center space-x-[1rem]">
                                     <button type="button" onClick={() => setOpen(false)} className="text-[#333] bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Cancel</button>
-                                    <button type="submit" onClick={createNewDeck}className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new deck</button>
+                                    <button type="submit" onClick={addNewDeck}className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new deck</button>
                                 </div>
                             </div>
 
@@ -81,7 +96,7 @@ export default function Decks() {
                             <Link href="/" className="-m-1.5 p-1.5">
                                 StudySwipe
                             </Link>
-                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">Alvin's Decks {/* display the user's name */}
+                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">{user.firsName}'s Decks {/* display the user's name */}
                                 <span className="text-[20px]">{decks.length} Flashcard Deck{(decks.length > 1) ? "s" : ""}</span> {/* insert the number of flashcards a user has */}
                             </h1>
                         </div>

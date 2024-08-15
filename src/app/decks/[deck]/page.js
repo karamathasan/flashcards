@@ -9,13 +9,12 @@ import { isLoaded,isSignedIn,useUser } from "@clerk/nextjs";
 
 export default function Deck({params}) {
     // access current user data
-    const { isSignedIn,isLoaded,user } = useUser();
+    const { isSignedIn, isLoaded, user } = useUser();
     const [flashcards, setFlashcards] = useState([
-        { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
-        { front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
+        // { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
+        // { front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
     ])
    
-
     const findDeck = async (decodedDeckName) => {
         try {
             const userId = user.id;
