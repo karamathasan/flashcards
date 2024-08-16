@@ -120,10 +120,10 @@ function Decks() {
             </div>
 
             <div className="mt-[5rem] flex justify-center items-center gap-[2rem]">
-                {decks.map((deck, index) => {
+                {isLoaded ? (decks.map((deck, index) => {
                     // console.log(deck.cards.length)
                     return (<DeckCard key={index} title={deck.id} name={"Alvin Shin"} numCards={deck.cards.length} />)
-                })}
+                })) : (<>loading decks. . .</>)}
             </div>
         </main>
     );
