@@ -16,6 +16,8 @@ import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
 
 function Deck({params}) {
     // access current user data
+    const [prompt, setPrompt] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
     const [ flashcards, setFlashcards] = useState([
         // { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
@@ -61,6 +63,55 @@ function Deck({params}) {
             findDeck(decodedDeckName);
         }
     }, [isLoaded]);
+
+
+
+     // if user wants a specific amount of cards
+    const handleCardCountChange = (e) => {
+        setCardCount(Number(e.target.value)); // Convert input to number
+      };
+      // if user wants a specific prompt
+      const handlePromptChange = (e) => {
+        setPrompt(e.target.value); // Updates the prompt state
+    };
+// generate user flashcards
+    const generateFlashcards = async () => {
+        if (!prompt.trim()) return;
+      
+    
+        setIsLoading(true);
+        try {
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [
+                { role: "system", content: "You are a helpful assistant that creates flashcards." },
+                { role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object with 'question' and 'answer' fields.` }
+              ],
+              temperature: 1.0,
+            }),
+          });
+      
+          if (!response.ok) {
+            throw new Error('Failed to generate flashcards');
+          }
+      
+          const data = await response.json();
+          const generatedFlashcards = JSON.parse(data.choices[0].message.content);
+          setFlashcards(generatedFlashcards);
+        } catch (error) {
+          console.error('Error generating flashcards:', error);
+          setFlashcards(defaultFlashcards);
+        } finally {
+          // Reset loading state to false after the operation completes
+          setIsLoading(false);
+        }
+      };
 
     return (
         <main className={"w-screen h-full min-h-screen flex flex-col justify-center items-center space-y-[5rem]"}>
