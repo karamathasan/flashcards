@@ -3,13 +3,51 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faBars, faX } from "@fortawesome/free-solid-svg-icons";
+import { DialogPanel, Dialog } from "@headlessui/react";
+import { ClerkProvider, SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs";
 
-export default function Home() {
+import { db } from "./firebase"
+import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
+import { useUser } from "@clerk/nextjs";
+
+const includedFeatures = [
+  'Private forum access',
+  'Member resources',
+  'Entry to annual conference',
+  'Official member t-shirt',
+]
+
+function Home() {
+  const router = useRouter()
+  const {isSignedIn, user} = useUser()
+
+  const addUser = async()=>{
+    if (isSignedIn){
+      const userDoc = doc(collection(db,'users'), user.id)
+      const userSnap = await getDoc(userDoc)
+
+      if (!userSnap.exists()){
+        try{
+          await setDoc(userDoc, {plan:"free"})
+          console.log("user successfully added to database")
+        }
+        catch (error){
+          console.error(error)
+        }
+      } 
+    }
+  }
+  
+  useEffect(()=>{
+    addUser()
+  }, [isSignedIn])
+
   return (
     <main className={"w-screen h-full min-h-screen flex flex-col justify-start items-center "}>
       <div>
@@ -21,9 +59,19 @@ export default function Home() {
               </Link>
             </div>
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-              <Link href="/sign-in" className="text-sm font-semibold leading-6 text-gray-900">
-                Sign in <span aria-hidden="true">&rarr;</span>
-              </Link>
+              <SignedIn>
+                <SignOutButton>
+                  <Link href="" className="text-sm font-semibold leading-6 text-gray-900">
+                    Log out <span aria-hidden="true">&rarr;</span>
+                  </Link>
+                </SignOutButton>
+              </SignedIn>
+
+              <SignedOut>
+                <Link href="/sign-up" className="text-sm font-semibold leading-6 text-gray-900">
+                  Sign up <span aria-hidden="true">&rarr;</span>
+                </Link>
+              </SignedOut>
             </div>
           </nav>
         </header>
@@ -52,17 +100,29 @@ export default function Home() {
               <p className="mt-6 text-lg leading-8 text-gray-600">
                 Using psychology-driven protocols, StudySwipe optimizes your learning experience by adapting to the way your brain works.
               </p>
+              <SignedOut>
+                <div className="mt-10 flex items-center justify-center gap-x-6">
+                  <a
+                    href="#"
+                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Get started
+                  </a>
+                  <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
+                    Learn more <span aria-hidden="true">→</span>
+                  </a>
+                </div>
+              </SignedOut>
+              <SignedIn>
               <div className="mt-10 flex items-center justify-center gap-x-6">
-                <Link
-                  href="/sign-up"
-                  className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  Get started
-                </Link>
-                <Link href="#plans" className="text-sm font-semibold leading-6 text-gray-900">
-                  Learn more <span aria-hidden="true">→</span>
-                </Link>
-              </div>
+                  <a
+                    href="/decks"
+                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Your Decks
+                  </a>
+                </div>
+              </SignedIn>
             </div>
           </div>
           <div
@@ -186,4 +246,12 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+export default function HomeWrapper(){
+  return (
+    <ClerkProvider>
+      <Home></Home>
+    </ClerkProvider>
+  )
 }
