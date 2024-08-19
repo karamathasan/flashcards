@@ -109,7 +109,7 @@ function Decks() {
                             <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => setOpen(true)} />
                             <Dropdown label={"Menu"}>
                                 <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are</p>
-                                <Link href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
+                                <Link href="/user-profile" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
                                 <form method="POST" action="#" role="none">
                                     <button type="submit" className="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-3">Sign out</button>
                                 </form>
