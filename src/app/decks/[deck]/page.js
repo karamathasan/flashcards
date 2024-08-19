@@ -1,10 +1,9 @@
 'use client'
 import { useEffect, useState } from "react";
-// import Flashcard from "@/app/components/flashcard";
-import Flashcard from "../../components/flashcard";
+
 import Dropdown from "../../components/dropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
+import { faArrowCircleLeft, faArrowCircleRight, faArrowLeft, faCirclePlus, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 
 // import { db } from @/app/firebase";
@@ -12,7 +11,45 @@ import { db } from "../../firebase";
 import Link from "next/link";
 import { doc, getDoc, setDoc, collection } from "firebase/firestore";
 import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
+import { FlashcardArray } from "react-quizlet-flashcard";
 
+const dumby = [
+    {
+        id: 1,
+        frontHTML: <div className="text-[35px] w-full h-full flex justify-center items-center">What is the capital of&nbsp;<u>Alaska</u>?</div>,
+        backHTML: <div className="text-[18px] w-full h-full flex justify-center items-center">Juneau</div>,
+    },
+    {
+        id: 2,
+        frontHTML: <>What is the capital of California?</>,
+        backHTML: <>Sacramento</>,
+    },
+    {
+        id: 3,
+        frontHTML: <>What is the capital of New York?</>,
+        backHTML: <>Albany</>,
+    },
+    {
+        id: 4,
+        frontHTML: <>What is the capital of Florida?</>,
+        backHTML: <>Tallahassee</>,
+    },
+    {
+        id: 5,
+        frontHTML: <>What is the capital of Texas?</>,
+        backHTML: <>Austin</>,
+    },
+    {
+        id: 6,
+        frontHTML: <>What is the capital of New Mexico?</>,
+        backHTML: <>Santa Fe</>,
+    },
+    {
+        id: 7,
+        frontHTML: <>What is the capital of Arizona?</>,
+        backHTML: <>Phoenix</>,
+    },
+]
 
 function Deck({ params }) {
     // access current user data
@@ -20,12 +57,13 @@ function Deck({ params }) {
     const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
     const [flashcards, setFlashcards] = useState([
-        { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
-        { front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
+        { id: 1, front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
+        { id: 2, front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
     ])
     const [open, setOpen] = useState(false)
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
+    const [htmlFlashcards, setHtmlFlashcards] = useState([])
 
     const createNewFlashcard = () => {
         setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
@@ -52,6 +90,7 @@ function Deck({ params }) {
                 throw new Error("document not found!")
             }
             setFlashcards(docSnap.data().cards);
+
         } catch (e) {
             console.error("Error fetching flashcards:", e);
         }
@@ -105,6 +144,10 @@ function Deck({ params }) {
             const data = await response.json();
             const generatedFlashcards = JSON.parse(data.choices[0].message.content);
             setFlashcards(generatedFlashcards);
+            flashcards.map((e, index) => {
+                setHtmlFlashcards(...htmlFlashcards, { id: index, frontHTML: <h1>{e.front}</h1>, backHTML: <h1>{e.back}</h1> })
+            })
+            console.log(htmlFlashcards);
         } catch (error) {
             console.error('Error generating flashcards:', error);
             setFlashcards(defaultFlashcards);
@@ -170,7 +213,6 @@ function Deck({ params }) {
                         </div>
 
                         <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
-                            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
                             <Dropdown label={"Menu"}>
                                 <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are </p>
                                 <Link href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
@@ -183,11 +225,13 @@ function Deck({ params }) {
                 </header>
             </div>
             <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {!isLoaded ? (<>loading </>) :
+                {/* {!isLoaded ? (<>loading </>) :
                     (flashcards.map((flashcard, index) =>
                         <Flashcard key={index} front={flashcard.front} back={flashcard.back} />
-                    ))}
+                    ))} */}
+                <FlashcardArray cards={dumby} />
             </div>
+            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
 
             <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
                 <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{2} terms</span></h1>
