@@ -14,41 +14,41 @@ import { doc, getDoc, setDoc, collection } from "firebase/firestore";
 import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
 
 
-function Deck({params}) {
+function Deck({ params }) {
     // access current user data
     const [prompt, setPrompt] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
-    const [ flashcards, setFlashcards] = useState([
-        // { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
-        // { front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
+    const [flashcards, setFlashcards] = useState([
+        { front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
+        { front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
     ])
     const [open, setOpen] = useState(false)
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
 
-    const createNewFlashcard = ()=>{
-        setFlashcards((flashcards)=>[...flashcards,{front:flashcardFront,back:flashcardBack}])
+    const createNewFlashcard = () => {
+        setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
     }
 
-    const updateDBFlashcards = async ()=>{
-        const deckRef = doc(collection(db,'users',user.id,'decks'), decodeURIComponent(params.deck))
+    const updateDBFlashcards = async () => {
+        const deckRef = doc(collection(db, 'users', user.id, 'decks'), decodeURIComponent(params.deck))
         const deckSnap = await getDoc(deckRef)
-        await setDoc(deckRef,{...deckSnap.data(), cards:flashcards })
+        await setDoc(deckRef, { ...deckSnap.data(), cards: flashcards })
     }
 
-    useEffect(()=>{
-        if (isLoaded){
+    useEffect(() => {
+        if (isLoaded) {
             updateDBFlashcards()
         }
-    },[flashcards])
+    }, [flashcards])
 
     const findDeck = async (decodedDeckName) => {
         try {
             const userId = user.id;
             const docRef = doc(collection(db, "users", userId, "decks"), decodedDeckName);
             const docSnap = await getDoc(docRef);
-            if (!docSnap.exists){
+            if (!docSnap.exists) {
                 throw new Error("document not found!")
             }
             setFlashcards(docSnap.data().cards);
@@ -56,7 +56,7 @@ function Deck({params}) {
             console.error("Error fetching flashcards:", e);
         }
     };
-     //TODO: use clerk to find the user, then use firebase to find this specific deck
+    //TODO: use clerk to find the user, then use firebase to find this specific deck
     useEffect(() => {
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
@@ -66,52 +66,53 @@ function Deck({params}) {
 
 
 
-     // if user wants a specific amount of cards
+    // if user wants a specific amount of cards
     const handleCardCountChange = (e) => {
         setCardCount(Number(e.target.value)); // Convert input to number
-      };
-      // if user wants a specific prompt
-      const handlePromptChange = (e) => {
+    };
+    // if user wants a specific prompt
+    const handlePromptChange = (e) => {
         setPrompt(e.target.value); // Updates the prompt state
     };
-// generate user flashcards
+
+    // generate user flashcards
     const generateFlashcards = async () => {
         if (!prompt.trim()) return;
-      
-    
+
+
         setIsLoading(true);
         try {
-          const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-            },
-            body: JSON.stringify({
-              model: "gpt-4o-mini",
-              messages: [
-                { role: "system", content: "You are a helpful assistant that creates flashcards." },
-                { role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object with 'question' and 'answer' fields.` }
-              ],
-              temperature: 1.0,
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to generate flashcards');
-          }
-      
-          const data = await response.json();
-          const generatedFlashcards = JSON.parse(data.choices[0].message.content);
-          setFlashcards(generatedFlashcards);
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are a helpful assistant that creates flashcards." },
+                        { role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object with 'question' and 'answer' fields.` }
+                    ],
+                    temperature: 1.0,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate flashcards');
+            }
+
+            const data = await response.json();
+            const generatedFlashcards = JSON.parse(data.choices[0].message.content);
+            setFlashcards(generatedFlashcards);
         } catch (error) {
-          console.error('Error generating flashcards:', error);
-          setFlashcards(defaultFlashcards);
+            console.error('Error generating flashcards:', error);
+            setFlashcards(defaultFlashcards);
         } finally {
-          // Reset loading state to false after the operation completes
-          setIsLoading(false);
+            // Reset loading state to false after the operation completes
+            setIsLoading(false);
         }
-      };
+    };
 
     return (
         <main className={"w-screen h-full min-h-screen flex flex-col justify-center items-center space-y-[5rem]"}>
@@ -148,7 +149,7 @@ function Deck({params}) {
                                 />
                                 <div className="flex flex-row justify-center items-center space-x-[1rem]">
                                     <button type="button" onClick={() => setOpen(false)} className="text-[#333] bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Cancel</button>
-                                    <button type="submit" onClick={createNewFlashcard}className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new flashcard</button>
+                                    <button type="submit" onClick={createNewFlashcard} className="text-white bg-[#4bacfc] hover:bg-[#4480f7] focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Create new flashcard</button>
                                 </div>
                             </div>
 
@@ -169,7 +170,7 @@ function Deck({params}) {
                         </div>
 
                         <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
-                            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={()=>{setOpen(true)}} />
+                            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
                             <Dropdown label={"Menu"}>
                                 <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are </p>
                                 <Link href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
@@ -182,16 +183,27 @@ function Deck({params}) {
                 </header>
             </div>
             <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {!isLoaded ? (<>loading </>) : 
-                (flashcards.map((flashcard, index) =>
-                    <Flashcard key={index} front={flashcard.front} back={flashcard.back} />
-                ))}
+                {!isLoaded ? (<>loading </>) :
+                    (flashcards.map((flashcard, index) =>
+                        <Flashcard key={index} front={flashcard.front} back={flashcard.back} />
+                    ))}
+            </div>
+
+            <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
+                <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{2} terms</span></h1>
+                {!isLoaded ? (<>loading </>) :
+                    (flashcards.map((flashcard, index) =>
+                        <div key={index} className="py-[1rem] px-[1.5rem] w-[90vw] sm:w-[80vw] md:w-[70vw] ">
+                            <h1 className="text-[30px] font-[500] tracking-[1px]">{flashcard.front}</h1>
+                            <p>{flashcard.back}</p>
+                        </div>
+                    ))}
             </div>
         </main>
     )
 }
 
-export default function DeckWrapper({params}){
+export default function DeckWrapper({ params }) {
     return (
         <ClerkProvider>
             <Deck params={params}></Deck>

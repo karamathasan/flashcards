@@ -25,8 +25,8 @@ function Decks() {
     const [newTitle, setNewTitle] = useState("")
 
     const [decks, setDecks] = useState([
-        // { title: "biology" },
-        // { title: "CSE 214" },
+        { title: "biology" },
+        { title: "CSE 214" },
     ])
 
     const addNewDeck = async ()=>{
@@ -40,7 +40,7 @@ function Decks() {
         const userRef = doc(collection(db, 'users'), user.id)
         const userSnap = await getDoc(userRef)
         if (!userSnap.exists()){
-            throw new Error("user not found in databse!")
+            throw new Error("user not found in database!")
         }
         const docs = await getDocs(query(collection(db, 'users', user.id, 'decks')))
         const decksArr = []
@@ -108,7 +108,7 @@ function Decks() {
                         <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
                             <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => setOpen(true)} />
                             <Dropdown label={"Menu"}>
-                                <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are </p>
+                                <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are</p>
                                 <Link href="#" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
                                 <form method="POST" action="#" role="none">
                                     <button type="submit" className="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-3">Sign out</button>
@@ -119,10 +119,11 @@ function Decks() {
                 </header>
             </div>
 
-            <div className="mt-[5rem] flex justify-center items-center gap-[2rem]">
+            <div className="mt-[5rem] flex flex-col justify-center items-center gap-[1rem]">
                 {isLoaded ? (decks.map((deck, index) => {
                     // console.log(deck.cards.length)
-                    return (<DeckCard key={index} title={deck.id} name={"Alvin Shin"} numCards={deck.cards.length} />)
+                    // deck.cards.length
+                    return (<DeckCard key={index} title={deck.id} numCards={2} />)
                 })) : (<>loading decks. . .</>)}
             </div>
         </main>
