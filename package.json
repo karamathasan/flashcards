@@ -17,7 +17,7 @@
     "@headlessui/react": "^2.1.2",
     "@stripe/stripe-js": "^4.2.0",
     "dotenv": "^16.4.5",
-    "firebase": "^10.12.5",
+    "firebase": "^10.13.0",
     "framer-motion": "^11.3.24",
     "next": "^14.2.5",
     "openai": "^4.55.4",
