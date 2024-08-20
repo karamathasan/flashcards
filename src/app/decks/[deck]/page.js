@@ -31,7 +31,6 @@ function Deck({ params }) {
         setBack("")
         setOpen(false)
     }
-
     const updateDBFlashcards = async () => {
         const deckRef = doc(collection(db, 'users', user.id, 'decks'), decodeURIComponent(params.deck))
         const deckSnap = await getDoc(deckRef)
@@ -102,8 +101,7 @@ function Deck({ params }) {
                                 "front": string,
                                 "back": string
                             }
-                            place commas in between each json card and store in in an array
-                            `
+                            place commas in between each json card and store in in an array. NEVER USE forward ticks and JSON inside of the response PLEASE`
                         }
                     ],
                     temperature: 1.0,
@@ -115,14 +113,12 @@ function Deck({ params }) {
             }
 
             const data = await response.json();
-            console.log(data.choices[0].message.content)
-            
-            const generatedFlashcards = JSON.parse(data.choices[0].message.content.toString());
-
-            setFlashcards(...flashcards, generatedFlashcards);
-            setAIOpen(false);
-            setPrompt("");
-            setNumflashcards(0);
+            const generatedFlashcards = JSON.parse(data.choices[0].message.content);
+            generatedFlashcards.map((e) => {
+                setFlashcards([...flashcards, e])
+            })
+            console.log(generatedFlashcards, flashcards)
+            setAIOpen(false); setPrompt(""); setNumflashcards(0);
         } catch (error) {
             console.error('Error generating flashcards:', error);
         } finally {
