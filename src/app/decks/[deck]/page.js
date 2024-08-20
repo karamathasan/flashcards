@@ -67,6 +67,9 @@ function Deck({ params }) {
 
     const createNewFlashcard = () => {
         setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
+        setFront("")
+        setBack("")
+        setOpen(false)
     }
 
     const updateDBFlashcards = async () => {
