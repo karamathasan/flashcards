@@ -78,6 +78,7 @@ function Deck({ params }) {
     useEffect(() => {
         if (isLoaded) {
             updateDBFlashcards()
+
         }
     }, [flashcards])
 
@@ -100,6 +101,7 @@ function Deck({ params }) {
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
             findDeck(decodedDeckName);
+
         }
     }, [isLoaded]);
 
@@ -109,6 +111,7 @@ function Deck({ params }) {
     const handleCardCountChange = (e) => {
         setCardCount(Number(e.target.value)); // Convert input to number
     };
+
     // if user wants a specific prompt
     const handlePromptChange = (e) => {
         setPrompt(e.target.value); // Updates the prompt state
@@ -144,10 +147,6 @@ function Deck({ params }) {
             const data = await response.json();
             const generatedFlashcards = JSON.parse(data.choices[0].message.content);
             setFlashcards(generatedFlashcards);
-            flashcards.map((e, index) => {
-                setHtmlFlashcards(...htmlFlashcards, { id: index, frontHTML: <h1>{e.front}</h1>, backHTML: <h1>{e.back}</h1> })
-            })
-            console.log(htmlFlashcards);
         } catch (error) {
             console.error('Error generating flashcards:', error);
             setFlashcards(defaultFlashcards);
@@ -225,11 +224,21 @@ function Deck({ params }) {
                 </header>
             </div>
             <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {/* {!isLoaded ? (<>loading </>) :
-                    (flashcards.map((flashcard, index) =>
-                        <Flashcard key={index} front={flashcard.front} back={flashcard.back} />
-                    ))} */}
-                <FlashcardArray cards={dumby} />
+                {!isLoaded ? (<>loading </>) :
+                    <FlashcardArray
+                        cards={flashcards.map((e, index) => {
+                            return (
+                                {
+                                    id: index,
+                                    frontHTML: <h1 className="text-[35px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.front}</h1>,
+                                    backHTML: <h1 className="text-[18px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.back}</h1>
+                                }
+                            )
+                        })}
+
+                    />
+                }
+
             </div>
             <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
 
