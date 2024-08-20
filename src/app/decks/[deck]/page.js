@@ -5,7 +5,7 @@ import Dropdown from "../../components/dropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowCircleLeft, faArrowCircleRight, faArrowLeft, faCirclePlus, faMagicWandSparkles, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
-
+import { ThreeDot } from "react-loading-indicators";
 // import { db } from @/app/firebase";
 import { db } from "../../firebase";
 import Link from "next/link";
@@ -13,57 +13,18 @@ import { doc, getDoc, setDoc, collection } from "firebase/firestore";
 import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
 import { FlashcardArray } from "react-quizlet-flashcard";
 
-const dumby = [
-    {
-        id: 1,
-        frontHTML: <div className="text-[35px] w-full h-full flex justify-center items-center">What is the capital of&nbsp;<u>Alaska</u>?</div>,
-        backHTML: <div className="text-[18px] w-full h-full flex justify-center items-center">Juneau</div>,
-    },
-    {
-        id: 2,
-        frontHTML: <>What is the capital of California?</>,
-        backHTML: <>Sacramento</>,
-    },
-    {
-        id: 3,
-        frontHTML: <>What is the capital of New York?</>,
-        backHTML: <>Albany</>,
-    },
-    {
-        id: 4,
-        frontHTML: <>What is the capital of Florida?</>,
-        backHTML: <>Tallahassee</>,
-    },
-    {
-        id: 5,
-        frontHTML: <>What is the capital of Texas?</>,
-        backHTML: <>Austin</>,
-    },
-    {
-        id: 6,
-        frontHTML: <>What is the capital of New Mexico?</>,
-        backHTML: <>Santa Fe</>,
-    },
-    {
-        id: 7,
-        frontHTML: <>What is the capital of Arizona?</>,
-        backHTML: <>Phoenix</>,
-    },
-]
+require('dotenv').config()
 
 function Deck({ params }) {
     // access current user data
     const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
-    const [flashcards, setFlashcards] = useState([
-        { id: 1, front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
-        { id: 2, front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
-    ])
+    const [flashcards, setFlashcards] = useState([])
     const [manualOpen, setOpen] = useState(false)
     const [aiOpen, setAIOpen] = useState(false)
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
-
+    
     const createNewFlashcard = () => {
         setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
         setFront("")
@@ -123,37 +84,45 @@ function Deck({ params }) {
         if (!prompt.trim()) return;
 
         setIsLoading(true);
+        let API_URL = "https://api.openai.com/v1/chat/completions"
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Authorization': "Bearer " +  process.env.NEXT_PUBLIC_OPENAI_API_KEY,
                 },
                 body: JSON.stringify({
-                    model: "gpt-4o-mini",
+                    model: "gpt-3.5-turbo",
                     messages: [
                         { role: "system", content: "You are a helpful assistant that creates flashcards." },
                         {
                             role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object formated as 
                             {
-                                front: string,
-                                back: string
+                                "front": string,
+                                "back": string
                             }
-                            nest each front and back element of the flashcard within the h1 tags already provided.`
+                            place commas in between each json card and store in in an array
+                            `
                         }
                     ],
                     temperature: 1.0,
                 }),
             });
-
+            
             if (!response.ok) {
                 throw new Error('Failed to generate flashcards');
             }
 
             const data = await response.json();
-            const generatedFlashcards = JSON.parse(data.choices[0].message.content);
+            console.log(data.choices[0].message.content)
+            
+            const generatedFlashcards = JSON.parse(data.choices[0].message.content.toString());
+
             setFlashcards(...flashcards, generatedFlashcards);
+            setAIOpen(false);
+            setPrompt("");
+            setNumflashcards(0);
         } catch (error) {
             console.error('Error generating flashcards:', error);
         } finally {
@@ -255,7 +224,7 @@ function Deck({ params }) {
                             <Link href="/" className="-m-1.5 p-1.5">
                                 StudySwipe
                             </Link>
-                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">{params.deck}
+                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">{decodeURI(params.deck)}
                             </h1>
                         </div>
 
@@ -271,36 +240,44 @@ function Deck({ params }) {
                     </nav>
                 </header>
             </div>
-            <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {!isLoaded ? (<>loading </>) :
-                    <FlashcardArray
-                        cards={flashcards.map((e, index) => {
-                            return (
-                                {
-                                    id: index,
-                                    frontHTML: <h1 className="text-[35px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.front}</h1>,
-                                    backHTML: <h1 className="text-[18px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.back}</h1>
-                                }
-                            )
-                        })}
+            {!isLoaded ?
+                (<ThreeDot color="#4bacfc" size="medium" text="" textColor="" />)
+                :
+                (<>
+                    <div className="flex flex-col justify-center items-center space-y-[2rem]">
+                        {<FlashcardArray
+                            cards={flashcards.map((e, index) => {
+                                return (
+                                    {
+                                        id: index,
+                                        frontHTML: <h1 className="text-[35px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.front}</h1>,
+                                        backHTML: <h1 className="text-[18px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.back}</h1>
+                                    }
+                                )
+                            })}
 
-                    />
-                }
+                        />
+                        }
 
-            </div>
-            <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
-            <FontAwesomeIcon icon={faMagicWandSparkles} className="text-[2.5rem] cursor-pointer" onClick={() => { }} />
+                    </div>
 
-            <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
-                <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{2} terms</span></h1>
-                {!isLoaded ? (<>loading </>) :
-                    (flashcards.map((flashcard, index) =>
-                        <div key={index} className="py-[1rem] px-[1.5rem] w-[90vw] sm:w-[80vw] md:w-[70vw] ">
-                            <h1 className="text-[30px] font-[500] tracking-[1px]">{flashcard.front}</h1>
-                            <p>{flashcard.back}</p>
-                        </div>
-                    ))}
-            </div>
+                    <div className="flex flex-row justify-center items-center space-x-[2rem]">
+                        <FontAwesomeIcon icon={faCirclePlus} className="text-[2.5rem] cursor-pointer" onClick={() => { setOpen(true) }} />
+                        <FontAwesomeIcon icon={faMagicWandSparkles} className="text-[2.5rem] cursor-pointer" onClick={() => { setAIOpen(true) }} />
+                    </div>
+
+                    <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
+                        <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{2} terms</span></h1>
+                        {(flashcards.map((flashcard, index) =>
+                            <div key={index} className="py-[1rem] px-[1.5rem] w-[90vw] sm:w-[80vw] md:w-[70vw] ">
+                                <h1 className="text-[30px] font-[500] tracking-[1px]">{flashcard.front}</h1>
+                                <p>{flashcard.back}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                </>)
+            }
         </main>
     )
 }

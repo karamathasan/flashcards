@@ -23,6 +23,7 @@
     "openai": "^4.55.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-loading-indicators": "^1.0.0",
     "react-quizlet-flashcard": "^3.0.0"
   },
   "devDependencies": {
