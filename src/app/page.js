@@ -13,8 +13,11 @@ import { DialogPanel, Dialog } from "@headlessui/react";
 import { ClerkProvider, SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs";
 
 import { db } from "./firebase"
-import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection} from "firebase/firestore";
 import { useUser } from "@clerk/nextjs";
+
+// import { getStripe } from "../utils/get-stripe"
+import getStripe from "../utils/get-stripe"
 
 const includedFeatures = [
   'Private forum access',
@@ -27,6 +30,23 @@ function Home() {
   const router = useRouter()
   const {isSignedIn, user} = useUser()
 
+  const checkoutRedirect = async () => {
+    const checkoutSession = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { origin: 'http://localhost:3000' },
+    })
+    const checkoutSessionJson = await checkoutSession.json()
+  
+    const stripe = await getStripe()
+    const {error} = await stripe.redirectToCheckout({
+      sessionId: checkoutSessionJson.id,
+    })
+  
+    if (error) {
+      console.warn(error.message)
+    }
+  }
+  
   const addUser = async()=>{
     if (isSignedIn){
       const userDoc = doc(collection(db,'users'), user.id)
@@ -172,12 +192,24 @@ function Home() {
                     <span className="text-5xl font-bold tracking-tight text-gray-900">$5<span className="text-lg tracking-lighter font-semibold">/month</span></span>
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">USD</span>
                   </p>
-                  <Link
-                    href="/sign-up"
-                    className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Get access
-                  </Link>
+                  <SignedIn>
+                    <button
+                      // href="/checkout"
+                      onClick={checkoutRedirect}
+                      className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Get access
+                    </button>
+                  </SignedIn>
+
+                  <SignedOut>
+                    <Link
+                      href="/sign-up"
+                      className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Get access
+                    </Link>
+                  </SignedOut>
                   <p className="mt-6 text-xs leading-5 text-gray-600">
                     Invoices and receipts available for easy company reimbursement
                   </p>
@@ -225,12 +257,12 @@ function Home() {
                     <span className="text-5xl font-bold tracking-tight text-gray-900">$0</span>
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">USD</span>
                   </p>
-                  <Link
-                    href="/sign-up"
-                    className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Get access
-                  </Link>
+                    <Link
+                      href="/sign-up"
+                      className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Get access
+                    </Link>
                   <p className="mt-6 text-xs leading-5 text-gray-600">
                     Invoices and receipts available for easy company reimbursement
                   </p>

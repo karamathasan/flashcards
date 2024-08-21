@@ -10,7 +10,7 @@ import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { db } from "../../firebase";
 import Link from "next/link";
 import { doc, getDoc, setDoc, collection } from "firebase/firestore";
-import { ClerkProvider, isLoaded, isSignedIn, useUser } from "@clerk/nextjs";
+import { ClerkProvider, isLoaded, isSignedIn, SignOutButton, useUser } from "@clerk/nextjs";
 import { FlashcardArray } from "react-quizlet-flashcard";
 
 const dumby = [
@@ -57,8 +57,8 @@ function Deck({ params }) {
     const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
     const [flashcards, setFlashcards] = useState([
-        { id: 1, front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
-        { id: 2, front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
+        // { id: 1, front: "Singly-Linked List", back: "A data structure that orders a set of data elements, each containing a link to it's successor." },
+        // { id: 2, front: "Stack", back: "A data structure that orders a set of data elements that are placed first in and last out. A real life example is a pile of books; you add and remove a book from the top." }
     ])
     const [open, setOpen] = useState(false)
     const [flashcardFront, setFront] = useState("")
@@ -78,7 +78,6 @@ function Deck({ params }) {
     useEffect(() => {
         if (isLoaded) {
             updateDBFlashcards()
-
         }
     }, [flashcards])
 
@@ -96,16 +95,12 @@ function Deck({ params }) {
             console.error("Error fetching flashcards:", e);
         }
     };
-    //TODO: use clerk to find the user, then use firebase to find this specific deck
     useEffect(() => {
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
             findDeck(decodedDeckName);
-
         }
     }, [isLoaded]);
-
-
 
     // if user wants a specific amount of cards
     const handleCardCountChange = (e) => {
@@ -207,24 +202,25 @@ function Deck({ params }) {
                             <Link href="/" className="-m-1.5 p-1.5">
                                 StudySwipe
                             </Link>
-                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">{params.deck}
+                            <h1 className="text-[38px] font-[500] tracking-[1.5px]">{decodeURIComponent(params.deck)}
                             </h1>
                         </div>
 
                         <div className="flex flex-row justify-center items-center space-x-[1.5rem]">
                             <Dropdown label={"Menu"}>
-                                <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are </p>
+                                {/* the email doesnt fit the box its in */}
+                                <p className="block px-4 py-2 text-md font-semibold text-gray-700 border-b-[1px]">You are {isLoaded ? user.primaryEmailAddress.emailAddress : ". . ."} </p>
                                 <Link href="/user-profile" className="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-0">Account settings</Link>
-                                <form method="POST" action="#" role="none">
+                                <SignOutButton>
                                     <button type="submit" className="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabIndex="-1" id="menu-item-3">Sign out</button>
-                                </form>
+                                </SignOutButton>
                             </Dropdown>
                         </div>
                     </nav>
                 </header>
             </div>
             <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                {!isLoaded ? (<>loading </>) :
+                {!isLoaded ? (<> loading </>) :
                     <FlashcardArray
                         cards={flashcards.map((e, index) => {
                             return (
@@ -235,7 +231,6 @@ function Deck({ params }) {
                                 }
                             )
                         })}
-
                     />
                 }
 
