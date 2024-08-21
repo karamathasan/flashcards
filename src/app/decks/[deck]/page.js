@@ -114,10 +114,7 @@ function Deck({ params }) {
 
             const data = await response.json();
             const generatedFlashcards = JSON.parse(data.choices[0].message.content);
-            generatedFlashcards.map((e) => {
-                setFlashcards([...flashcards, e])
-            })
-            console.log(generatedFlashcards, flashcards)
+            setFlashcards([...flashcards, ...generatedFlashcards])
             setAIOpen(false); setPrompt(""); setNumflashcards(0);
         } catch (error) {
             console.error('Error generating flashcards:', error);
