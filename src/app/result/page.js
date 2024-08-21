@@ -21,6 +21,7 @@ function Checkout({params}){
     //TODO: get the session id, likely 
     // const searchParams = useSearchParams()
     // const session_id = searchParams.get('session_id')
+    
     const [session_id, setSession_id] = useState()
 
     const [loading, setLoading] = useState(true)
@@ -31,27 +32,64 @@ function Checkout({params}){
 
     useEffect(()=>{
       // setSession_id()
+
+      // if (router.query.session_id) {
+        // setSession_id(router.query.session_id);
+
+      // }
+    // }, [router.query.session_id]);
     })
 
-    // useEffect(() => {
-    //     const fetchCheckoutSession = async () => {
-    //       if (!session_id) return
-    //       try {
-    //         const res = await fetch(`/api/checkout_sessions?session_id=${session_id}`)
-    //         const sessionData = await res.json()
-    //         if (res.ok) {
-    //           setSession(sessionData)
-    //         } else {
-    //           setError(sessionData.error)
-    //         }
-    //       } catch (err) {
-    //         setError('An error occurred while retrieving the session.')
-    //       } finally {
-    //         setLoading(false)
-    //       }
-    //     }
-    //     fetchCheckoutSession()
-    //   }, [session_id])
+    useEffect(() => {
+      const fetchCheckoutSession = async () => {
+        if (!session_id) return;
+        try {
+          const res = await fetch(`/api/checkout?session_id=${session_id}`);
+          const sessionData = await res.json();
+          if (res.ok) {
+            setSession(sessionData);
+            if (sessionData.payment_status === 'paid') {
+              await updateUserPlan('pro'); 
+            }
+          } else {
+            setError(sessionData.error);
+          }
+        } catch (err) {
+          setError('An error occurred while retrieving the session.');
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchCheckoutSession();
+    }, [session_id]);
+  
+    const updateUserPlan = async (newPlan) => {
+      if (isSignedIn && user) {
+        const userDoc = doc(db, 'users', user.id);
+        try {
+          await setDoc(userDoc, { plan: newPlan }, { merge: true });
+          console.log("User plan updated successfully");
+          applyPlanLimits(newPlan); 
+        } catch (error) {
+          console.error("Error updating user plan:", error);
+        }
+      }
+    };
+
+    // I have no clue what we plan on doing based on the limits
+    const applyPlanLimits = (plan) => {
+      switch (plan) {
+        case 'free':
+          // Limited access ??
+          break;
+        case 'pro':
+          // Full access ??
+          break;
+        default:
+          
+      }
+    }
 
       return (<> test </>)
 
