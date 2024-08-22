@@ -77,7 +77,7 @@ function Deck({ params }) {
     };
 
     // generate user flashcards
-    const [numFlashcards, setNumflashcards] = useState(0)
+    const [numFlashcards, setNumflashcards] = useState(1)
     const [prompt, setPrompt] = useState("")
     const generateFlashcards = async () => {
         if (!prompt.trim()) return;
@@ -115,7 +115,7 @@ function Deck({ params }) {
             const data = await response.json();
             const generatedFlashcards = JSON.parse(data.choices[0].message.content);
             setFlashcards([...flashcards, ...generatedFlashcards])
-            setAIOpen(false); setPrompt(""); setNumflashcards(0);
+            setAIOpen(false); setPrompt(""); setNumflashcards(1);
         } catch (error) {
             console.error('Error generating flashcards:', error);
         } finally {
