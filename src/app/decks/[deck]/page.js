@@ -64,11 +64,30 @@ function Deck({ params }) {
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
     const [htmlFlashcards, setHtmlFlashcards] = useState([])
+    const [cardCount, setCardCount] = useState(5);
 
-    const createNewFlashcard = () => {
-        setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
+    const applyPlanLimits = (plan) => {
+        switch (plan) {
+          case 'free':
+            return 5;
+          case 'pro':
+            return Infinity;
+          default:
+            return 5;
+        }
+      }
+
+      const createNewFlashcard = () => {
+        const maxCardCount = applyPlanLimits(user.plan);
+        
+        if (flashcards.length < maxCardCount) {
+            setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }]);
+        } else {
+            alert(`You have reached the maximum number of flashcards (${maxCardCount}) for your plan.`);
+            return; 
+        }
     }
-
+    
     const updateDBFlashcards = async () => {
         const deckRef = doc(collection(db, 'users', user.id, 'decks'), decodeURIComponent(params.deck))
         const deckSnap = await getDoc(deckRef)
@@ -104,7 +123,8 @@ function Deck({ params }) {
 
     // if user wants a specific amount of cards
     const handleCardCountChange = (e) => {
-        setCardCount(Number(e.target.value)); // Convert input to number
+        setCardCount(Number(e.target.value))
+          
     };
 
     // if user wants a specific prompt
@@ -116,6 +136,8 @@ function Deck({ params }) {
     const generateFlashcards = async () => {
         if (!prompt.trim()) return;
 
+        const maxCardCount = applyPlanLimits(user.plan); 
+        const adjustedCardCount = Math.min(cardCount, maxCardCount);
 
         setIsLoading(true);
         try {
@@ -129,7 +151,7 @@ function Deck({ params }) {
                     model: "gpt-4o-mini",
                     messages: [
                         { role: "system", content: "You are a helpful assistant that creates flashcards." },
-                        { role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object with 'question' and 'answer' fields.` }
+                        { role: "user", content: `Create ${adjustedCardCount} flashcards about ${prompt}. Format each flashcard as a JSON object with 'question' and 'answer' fields.` }
                     ],
                     temperature: 1.0,
                 }),
@@ -150,6 +172,7 @@ function Deck({ params }) {
             setIsLoading(false);
         }
     };
+
 
     return (
         <main className={"w-screen h-full min-h-screen flex flex-col justify-center items-center space-y-[5rem]"}>

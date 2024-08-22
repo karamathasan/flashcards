@@ -63,7 +63,7 @@ function Home() {
       } 
     }
   }
-  
+ 
   useEffect(()=>{
     addUser()
   }, [isSignedIn])

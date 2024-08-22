@@ -77,17 +77,15 @@ function Checkout({params}){
       }
     };
 
-    // I have no clue what we plan on doing based on the limits
+    
     const applyPlanLimits = (plan) => {
       switch (plan) {
         case 'free':
-          // Limited access ??
-          break;
+          return 5;
         case 'pro':
-          // Full access ??
-          break;
+          return Infinity;
         default:
-          
+          return 0;
       }
     }
 
