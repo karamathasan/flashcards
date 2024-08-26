@@ -26,7 +26,7 @@
     "react-quizlet-flashcard": "^3.0.0",
     "react-router-dom": "^6.26.1",
     "stripe": "^16.8.0",
-    "react-loading-indicators": "^1.0.0",
+    "react-loading-indicators": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.2.0",
