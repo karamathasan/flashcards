@@ -24,10 +24,7 @@ function Decks() {
     const [open, setOpen] = useState(false)
     const [newTitle, setNewTitle] = useState("")
 
-    const [decks, setDecks] = useState([
-        { title: "biology" },
-        { title: "CSE 214" },
-    ])
+    const [decks, setDecks] = useState([])
 
     const addNewDeck = async ()=>{
         setDecks([...decks,{title:newTitle}])
