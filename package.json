@@ -23,10 +23,10 @@
     "openai": "^4.55.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-loading-indicators": "^1.0.0",
     "react-quizlet-flashcard": "^3.0.0",
     "react-router-dom": "^6.26.1",
-    "stripe": "^16.8.0",
-    "react-loading-indicators": "^1.0.0"
+    "stripe": "^16.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.2.0",

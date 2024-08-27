@@ -117,11 +117,15 @@ function Decks() {
             </div>
 
             <div className="mt-[5rem] flex flex-col justify-center items-center gap-[1rem]">
-                {isLoaded ? (decks.map((deck, index) => {
-                    // console.log(deck.cards.length)
-                    // deck.cards.length
-                    return (<DeckCard key={index} title={deck.id} numCards={2} />)
-                })) : (<>loading decks. . .</>)}
+                {isLoaded ? (
+                    decks.length > 0 ? (
+                        decks.map((deck, index) => {
+                            return (<DeckCard key={index} title={deck.id} numCards={deck.length} />)
+                        })
+                    ) : (
+                        <> You have no decks </>
+                    )
+                ) : (<>loading decks. . .</>)}
             </div>
         </main>
     );

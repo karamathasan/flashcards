@@ -16,7 +16,20 @@ export default function CheckoutWrapper({params}){
   )
 }
 
-function Checkout({params}){
+//TODO: upon completion of filling in payment details and subscriptions:
+/**
+ * 1. the user can now generate an unlimited number of flashcards for a topic
+ * 2. 
+ */
+// these mean that this file should contain the following
+/**
+ * 1. A Thank you message
+ * 2. A return
+ * 3. A reassignment to the user's db plan field
+ * 4. the plan to expire after a month
+ */
+
+function Checkout(){
     const router = useRouter()
     //TODO: get the session id, likely 
     // const searchParams = useSearchParams()
@@ -30,35 +43,44 @@ function Checkout({params}){
     const { isSignedIn, isLoaded, user } = useUser();
 
     useEffect(()=>{
-      // setSession_id()
+      const link = location.href.split("=")[1]
+      console.log(`link: ${link}`)
+      setSession_id(link)
+      console.log(`session: ${session}`)
     })
 
-    // useEffect(() => {
-    //     const fetchCheckoutSession = async () => {
-    //       if (!session_id) return
-    //       try {
-    //         const res = await fetch(`/api/checkout_sessions?session_id=${session_id}`)
-    //         const sessionData = await res.json()
-    //         if (res.ok) {
-    //           setSession(sessionData)
-    //         } else {
-    //           setError(sessionData.error)
-    //         }
-    //       } catch (err) {
-    //         setError('An error occurred while retrieving the session.')
-    //       } finally {
-    //         setLoading(false)
-    //       }
-    //     }
-    //     fetchCheckoutSession()
-    //   }, [session_id])
+    useEffect(() => {
+        const fetchCheckoutSession = async () => {
+          if (!session_id) {
+            console.log("session id undefined")
+            return
+          }
+          try {
+            const res = await fetch(`/api/checkout_sessions?session_id=${session_id}`)
+            const sessionData = await res.json()
+            if (res.ok) {
+              setSession(sessionData)
+              console.log(sessionData)
+            } else {
+              setError(sessionData.error)
+            }
+          } catch (err) {
+            setError('An error occurred while retrieving the session.')
+          } finally {
+            setLoading(false)
+          }
+        }
+        fetchCheckoutSession()
+      }, [session_id])
 
-      return (<> test </>)
+
+    return (<> test </>)
 
       return (
         <>
         test
-          {session.payment_status === 'paid' ? (
+        {!session_id ? (<></>) : (
+          session.payment_status === 'paid' ? (
             <>
             <h4>
               success!
@@ -82,7 +104,8 @@ function Checkout({params}){
                 </Typography>
               </Box> */}
             </>
-          )}
+          )
+        )}
         </>
         )
 

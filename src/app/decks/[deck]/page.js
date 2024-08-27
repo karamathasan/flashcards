@@ -24,6 +24,8 @@ function Deck({ params }) {
     const [aiOpen, setAIOpen] = useState(false)
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
+
+    const [plan, setPlan] = useState("")
     
     const createNewFlashcard = () => {
         setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
@@ -58,10 +60,19 @@ function Deck({ params }) {
         }
     };
     useEffect(() => {
+        const loadPlan = async ()=>{
+            const userId = user.id;
+            const docRef = doc(collection(db, "users"), userId);
+            const docSnap = await getDoc(docRef);
+            const data = docSnap.data()
+            setPlan(data.plan)
+        }
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
             findDeck(decodedDeckName);
+            loadPlan()
         }
+
     }, [isLoaded]);
 
     // if user wants a specific amount of cards
@@ -76,6 +87,14 @@ function Deck({ params }) {
 
     // generate user flashcards
     const [numFlashcards, setNumflashcards] = useState(1)
+
+    // the purpose of this method is to make sure that the user cannot make more flashcards than the limit based on their plan
+    const updateNumGeneratedFlashcards = async (target)=>{
+        if (plan === "free"){
+            setNumflashcards(Math.max(target, 10))
+        } 
+    }
+
     const [prompt, setPrompt] = useState("")
     const generateFlashcards = async () => {
         if (!prompt.trim()) return;
@@ -195,7 +214,7 @@ function Deck({ params }) {
                                     id="number-of-cards"
                                     type="number"
                                     value={numFlashcards}
-                                    onChange={(e) => setNumflashcards(e.target.value)}
+                                    onChange={(e) => updateNumGeneratedFlashcards(e.target.value)}
                                 />
                                 <div className="flex flex-row justify-center items-center space-x-[1rem]">
                                     <button type="button" onClick={() => setAIOpen(false)} className="text-[#333] bg-gray-100 hover:bg-gray-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center transition ease-in-out duration-300">Cancel</button>
@@ -237,20 +256,23 @@ function Deck({ params }) {
                 :
                 (<>
                     <div className="flex flex-col justify-center items-center space-y-[2rem]">
-                        {<FlashcardArray
-                            cards={flashcards.map((e, index) => {
-                                return (
-                                    {
-                                        id: index,
-                                        frontHTML: <h1 className="text-[35px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.front}</h1>,
-                                        backHTML: <h1 className="text-[18px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.back}</h1>
-                                    }
-                                )
-                            })}
-
-                        />
+                        {
+                            flashcards.length > 0 ? (
+                                <FlashcardArray
+                                cards={flashcards.map((e, index) => {
+                                    return (
+                                        {
+                                            id: index,
+                                            frontHTML: <h1 className="text-[35px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.front}</h1>,
+                                            backHTML: <h1 className="text-[18px] w-full h-full flex justify-center items-center text-center px-[1rem]">{e.back}</h1>
+                                        }
+                                    )
+                                })}
+                            />
+                            ) : (
+                                <h1 className="px-[1.5rem] w-full text-left text-[56px] font-[500] tracking-[1.2px]"> You have no cards in this deck . . . </h1>
+                            )
                         }
-
                     </div>
 
                     <div className="flex flex-row justify-center items-center space-x-[2rem]">
@@ -258,15 +280,22 @@ function Deck({ params }) {
                         <FontAwesomeIcon icon={faMagicWandSparkles} className="text-[2.5rem] cursor-pointer" onClick={() => { setAIOpen(true) }} />
                     </div>
 
-                    <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
-                        <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{2} terms</span></h1>
-                        {(flashcards.map((flashcard, index) =>
-                            <div key={index} className="py-[1rem] px-[1.5rem] w-[90vw] sm:w-[80vw] md:w-[70vw] ">
-                                <h1 className="text-[30px] font-[500] tracking-[1px]">{flashcard.front}</h1>
-                                <p>{flashcard.back}</p>
-                            </div>
-                        ))}
-                    </div>
+                    {
+                        flashcards.length > 0 ? (
+                            <div className="flex flex-col justify-center items-center space-y-[1rem] divide-y-2">
+                            <h1 className="px-[1.5rem] w-full text-left text-[38px] font-[500] tracking-[1.2px]">Terms in this set <span className="text-[15px]">{flashcards.length} terms</span></h1>
+                            {(flashcards.map((flashcard, index) =>
+                                <div key={index} className="py-[1rem] px-[1.5rem] w-[90vw] sm:w-[80vw] md:w-[70vw] ">
+                                    <h1 className="text-[30px] font-[500] tracking-[1px]">{flashcard.front}</h1>
+                                    <p>{flashcard.back}</p>
+                                </div>
+                            ))}
+                        </div>
+                        ) : (
+                            <></>
+                        )
+                    }
+
 
                 </>)
             }
