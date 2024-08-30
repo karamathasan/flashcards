@@ -29,6 +29,7 @@ const includedFeatures = [
 function Home() {
   const router = useRouter()
   const {isSignedIn, user} = useUser()
+  const [plan, setPlan] = useState()
 
   const checkoutRedirect = async () => {
     const checkoutSession = await fetch('/api/checkout', {
@@ -61,6 +62,8 @@ function Home() {
           console.error(error)
         }
       } 
+
+      setPlan(userSnap.data().plan)
     }
   }
   
@@ -166,8 +169,7 @@ function Home() {
             <div className="p-8 sm:p-10 lg:flex-auto">
               <h3 className="text-2xl font-bold tracking-tight text-gray-900">Premium Membership</h3>
               <p className="mt-6 text-base leading-7 text-gray-600">
-                Lorem ipsum dolor sit amet consect etur adipisicing elit. Itaque amet indis perferendis blanditiis
-                repellendus etur quidem assumenda.
+                Enjoy academic honesty while using AI, letting you be as efficient as you want, for as long as you want
               </p>
               <div className="mt-10 flex items-center gap-x-4">
                 <h4 className="flex-none text-sm font-semibold leading-6 text-indigo-600">What’s included</h4>
@@ -179,7 +181,12 @@ function Home() {
               >
                 <li className="flex gap-x-3">
                   <FontAwesomeIcon icon={faCheck} aria-hidden="true" className="h-6 w-5 flex-none text-indigo-600" />
-                  hi
+                  Unlimited flashcard generation
+                </li>
+
+                <li className="flex gap-x-3">
+                  <FontAwesomeIcon icon={faCheck} aria-hidden="true" className="h-6 w-5 flex-none text-indigo-600" />
+                  Unlimited custom flashcards and decks
                 </li>
               </ul>
 
@@ -193,13 +200,20 @@ function Home() {
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">USD</span>
                   </p>
                   <SignedIn>
-                    <button
-                      // href="/checkout"
-                      onClick={checkoutRedirect}
-                      className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                      Get access
-                    </button>
+                    {plan === "pro" ? (
+                      <div
+                        className="mt-10 block w-full rounded-md bg-gray-300 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm"
+                      >
+                        Current plan
+                      </div>
+                    ) : (
+                      <button
+                        onClick={checkoutRedirect}
+                        className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      >
+                        Get access
+                      </button>
+                    )}
                   </SignedIn>
 
                   <SignedOut>
@@ -222,8 +236,7 @@ function Home() {
             <div className="p-8 sm:p-10 lg:flex-auto">
               <h3 className="text-2xl font-bold tracking-tight text-gray-900">Free Membership</h3>
               <p className="mt-6 text-base leading-7 text-gray-600">
-                Lorem ipsum dolor sit amet consect etur adipisicing elit. Itaque amet indis perferendis blanditiis
-                repellendus etur quidem assumenda.
+                The essentials of what you need for studying
               </p>
               <div className="mt-10 flex items-center gap-x-4">
                 <h4 className="flex-none text-sm font-semibold leading-6 text-indigo-600">What’s included</h4>
@@ -235,7 +248,7 @@ function Home() {
               >
                 <li className="flex gap-x-3">
                   <FontAwesomeIcon icon={faCheck} aria-hidden="true" className="h-6 w-5 flex-none text-indigo-600" />
-                  hi
+                  Unlimited custom flashcards and decks
                 </li>
               </ul>
 
@@ -245,7 +258,11 @@ function Home() {
               </div>
               <li className="flex gap-x-3">
                 <FontAwesomeIcon icon={faX} aria-hidden="true" className="h-6 w-5 flex-none text-[#ea6161]" />
-                ur mom lalala
+                Unlimited flashcard generation
+              </li>
+              <li className="flex gap-x-3">
+                <FontAwesomeIcon icon={faX} aria-hidden="true" className="h-6 w-5 flex-none text-[#ea6161]" />
+                Quiz generation (in development)
               </li>
 
             </div>
@@ -257,12 +274,22 @@ function Home() {
                     <span className="text-5xl font-bold tracking-tight text-gray-900">$0</span>
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">USD</span>
                   </p>
-                    <Link
-                      href="/sign-up"
-                      className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                      Get access
-                    </Link>
+                    <SignedOut>
+                      <Link
+                        href="/sign-up"
+                        className="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      >
+                        Get access
+                      </Link>
+                    </SignedOut>
+
+                    <SignedIn>
+                      <div
+                        className="mt-10 block w-full rounded-md bg-gray-300 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm"
+                      >
+                        Current plan
+                      </div>
+                    </SignedIn>
                   <p className="mt-6 text-xs leading-5 text-gray-600">
                     Invoices and receipts available for easy company reimbursement
                   </p>
