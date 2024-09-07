@@ -91,7 +91,7 @@ function Deck({ params }) {
     // the purpose of this method is to make sure that the user cannot make more flashcards than the limit based on their plan
     const updateNumGeneratedFlashcards = async (target)=>{
         if (plan === "free"){
-            setNumflashcards(Math.max(target, 10))
+            setNumflashcards(Math.min(target, 10))
         } 
     }
 

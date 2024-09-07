@@ -55,7 +55,7 @@ function Home() {
 
       if (!userSnap.exists()){
         try{
-          await setDoc(userDoc, {plan:"free"})
+          await setDoc(userDoc, {customer_id:"none"})
           console.log("user successfully added to database")
         }
         catch (error){
