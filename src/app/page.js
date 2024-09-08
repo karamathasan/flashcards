@@ -16,20 +16,13 @@ import { db } from "./firebase"
 import { doc, getDoc, setDoc, collection} from "firebase/firestore";
 import { useUser } from "@clerk/nextjs";
 
-// import { getStripe } from "../utils/get-stripe"
 import getStripe from "../utils/get-stripe"
 
-const includedFeatures = [
-  'Private forum access',
-  'Member resources',
-  'Entry to annual conference',
-  'Official member t-shirt',
-]
-
 function Home() {
-  const router = useRouter()
+
   const {isSignedIn, user} = useUser()
   const [plan, setPlan] = useState()
+  const [subscribed, setSubscribed] = useState(false);
 
   const checkoutRedirect = async () => {
     const checkoutSession = await fetch('/api/checkout', {
@@ -55,15 +48,31 @@ function Home() {
 
       if (!userSnap.exists()){
         try{
-          await setDoc(userDoc, {customer_id:"none"})
+          await setDoc(userDoc, {subscriber_id:"none", generation_uses:10})
+          setSubscribed(false)
           console.log("user successfully added to database")
         }
         catch (error){
           console.error(error)
         }
+      } else {
+        const subscriber_id = await userSnap.data().subscriber_id
+        // console.log(subscriber_id)
+        const subscriberData = await fetch("/api/subscriber",
+          {
+            method:"POST",
+            headers:{
+              'Content-Type': 'application/json',
+              origin:'http://localhost:3000' 
+            },
+            body:JSON.stringify(
+              {subscriber_id:subscriber_id}
+            )
+          }
+        )
+        subscriberData.json().then((data)=>{console.log(data)})
+        setSubscribed(false)
       } 
-
-      setPlan(userSnap.data().plan)
     }
   }
   
@@ -200,7 +209,7 @@ function Home() {
                     <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">USD</span>
                   </p>
                   <SignedIn>
-                    {plan === "pro" ? (
+                    {subscribed ? (
                       <div
                         className="mt-10 block w-full rounded-md bg-gray-300 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm"
                       >

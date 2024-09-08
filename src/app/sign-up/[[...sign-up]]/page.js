@@ -2,7 +2,6 @@
 
 import { SignUp } from "@clerk/nextjs";
 import { ClerkProvider } from "@clerk/nextjs";
-import { light } from "@clerk/themes";
 import { easeInOut, motion } from "framer-motion";
 
 

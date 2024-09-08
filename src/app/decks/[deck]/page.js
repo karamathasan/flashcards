@@ -22,6 +22,8 @@ function Deck({ params }) {
     const [flashcards, setFlashcards] = useState([])
     const [manualOpen, setOpen] = useState(false)
     const [aiOpen, setAIOpen] = useState(false)
+    const [genUses, setGenUses] = useState(1)
+
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
 
@@ -38,13 +40,6 @@ function Deck({ params }) {
         const deckSnap = await getDoc(deckRef)
         await setDoc(deckRef, { ...deckSnap.data(), cards: flashcards })
     }
-
-    useEffect(() => {
-        if (isLoaded) {
-            updateDBFlashcards()
-        }
-    }, [flashcards])
-
     const findDeck = async (decodedDeckName) => {
         try {
             const userId = user.id;
@@ -59,13 +54,36 @@ function Deck({ params }) {
             console.error("Error fetching flashcards:", e);
         }
     };
+
+    useEffect(() => {
+        if (isLoaded) {
+            updateDBFlashcards()
+        }
+    }, [flashcards])
+    
     useEffect(() => {
         const loadPlan = async ()=>{
             const userId = user.id;
             const docRef = doc(collection(db, "users"), userId);
             const docSnap = await getDoc(docRef);
             const data = docSnap.data()
-            setPlan(data.plan)
+            const customer_id = data.customer_id
+            if (data.customer_id !== "none"){
+                setPlan("pro")
+            }
+            const subscriberData = await fetch("/api/subscriber",
+                {
+                    method:"POST",
+                    headers:{
+                        'Content-Type': 'application/json',
+                        origin:'http://localhost:3000' 
+                    },
+                    body:JSON.stringify(
+                        {customer_id:customer_id}
+                    )
+                }
+            )
+            // subscriberData.json().then((data)=>{console.log(data)})
         }
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
@@ -90,6 +108,7 @@ function Deck({ params }) {
 
     // the purpose of this method is to make sure that the user cannot make more flashcards than the limit based on their plan
     const updateNumGeneratedFlashcards = async (target)=>{
+        
         if (plan === "free"){
             setNumflashcards(Math.min(target, 10))
         } 
