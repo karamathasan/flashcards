@@ -9,12 +9,8 @@ export async function POST(req) {
     const {subscriber_id} = await req.json()
 
     try{
-        // const customer = await stripe.customers.retrieve(customer_id)
         const subscription = await stripe.subscriptions.retrieve(subscriber_id)
-
-
-        // return NextResponse.json(subscriptions)
-        return NextResponse.json({"data":subscription.status})
+        return NextResponse.json({"status":subscription.status})
     } catch (e) {
         return NextResponse.json({"error":e.message})
     }

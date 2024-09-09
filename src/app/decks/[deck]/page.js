@@ -12,22 +12,27 @@ import Link from "next/link";
 import { doc, getDoc, setDoc, collection } from "firebase/firestore";
 import { ClerkProvider, isLoaded, isSignedIn, SignOutButton, useUser } from "@clerk/nextjs";
 import { FlashcardArray } from "react-quizlet-flashcard";
+import dotenv from "dotenv"
+dotenv.config()
 
-require('dotenv').config()
 
 function Deck({ params }) {
     // access current user data
     const [isLoading, setIsLoading] = useState(false);
     const { isSignedIn, isLoaded, user } = useUser();
+    
     const [flashcards, setFlashcards] = useState([])
     const [manualOpen, setOpen] = useState(false)
     const [aiOpen, setAIOpen] = useState(false)
-    const [genUses, setGenUses] = useState(1)
+    const [prompt, setPrompt] = useState("")
+
+    const [numFlashcards, setNumflashcards] = useState(1)
+    const [generationUses, setGenerationUses] = useState(1)
 
     const [flashcardFront, setFront] = useState("")
     const [flashcardBack, setBack] = useState("")
 
-    const [plan, setPlan] = useState("")
+    const [subscribed, setSubscribed] = useState(false)
     
     const createNewFlashcard = () => {
         setFlashcards((flashcards) => [...flashcards, { front: flashcardFront, back: flashcardBack }])
@@ -35,11 +40,56 @@ function Deck({ params }) {
         setBack("")
         setOpen(false)
     }
+
+    // retrieves the generation uses from the database 
+    const retrieveGenerationUses = async ()=>{
+        const docRef = doc(collection(db, 'users'), user.id)
+        const docSnap = await getDoc(docRef)
+        const data = docSnap.data()
+        setGenerationUses(data.generation_uses)
+        return generationUses
+    }
+
+    // updates the generation uses of the database
+    const updateGenerationUses = async ()=>{
+        const docRef = doc(collection(db, 'users'), user.id)
+        const docSnap = await getDoc(docRef)
+        const data = docSnap.data()
+        setDoc(docRef,{...data, generation_uses: generationUses} )
+    }
+
     const updateDBFlashcards = async () => {
         const deckRef = doc(collection(db, 'users', user.id, 'decks'), decodeURIComponent(params.deck))
         const deckSnap = await getDoc(deckRef)
         await setDoc(deckRef, { ...deckSnap.data(), cards: flashcards })
     }
+
+    const getSubscription = async()=>{
+        const userDoc = doc(collection(db,'users'), user.id)
+        const userSnap = await getDoc(userDoc)
+    
+        const subscriber_id = await userSnap.data().subscriber_id
+        const subscriberData = await fetch("/api/subscriber",
+            {
+                method:"POST",
+                headers:{
+                    'Content-Type': 'application/json',
+                    origin:'http://localhost:3000' 
+                },
+                body:JSON.stringify(
+                    {subscriber_id:subscriber_id}
+                )
+            }
+        )
+        const data = await subscriberData.json()
+        if (data.status === "active"){
+            setSubscribed(true)
+        } else {
+            await retrieveGenerationUses()
+            setSubscribed(false)
+        }
+      }
+
     const findDeck = async (decodedDeckName) => {
         try {
             const userId = user.id;
@@ -62,41 +112,13 @@ function Deck({ params }) {
     }, [flashcards])
     
     useEffect(() => {
-        const loadPlan = async ()=>{
-            const userId = user.id;
-            const docRef = doc(collection(db, "users"), userId);
-            const docSnap = await getDoc(docRef);
-            const data = docSnap.data()
-            const customer_id = data.customer_id
-            if (data.customer_id !== "none"){
-                setPlan("pro")
-            }
-            const subscriberData = await fetch("/api/subscriber",
-                {
-                    method:"POST",
-                    headers:{
-                        'Content-Type': 'application/json',
-                        origin:'http://localhost:3000' 
-                    },
-                    body:JSON.stringify(
-                        {customer_id:customer_id}
-                    )
-                }
-            )
-            // subscriberData.json().then((data)=>{console.log(data)})
-        }
         if (isLoaded && isSignedIn && user) {
             const decodedDeckName = decodeURIComponent(params.deck);
             findDeck(decodedDeckName);
-            loadPlan()
+            getSubscription()
         }
 
     }, [isLoaded]);
-
-    // if user wants a specific amount of cards
-    const handleCardCountChange = (e) => {
-        setCardCount(Number(e.target.value)); // Convert input to number
-    };
 
     // if user wants a specific prompt
     const handlePromptChange = (e) => {
@@ -104,53 +126,69 @@ function Deck({ params }) {
     };
 
     // generate user flashcards
-    const [numFlashcards, setNumflashcards] = useState(1)
 
     // the purpose of this method is to make sure that the user cannot make more flashcards than the limit based on their plan
     const updateNumGeneratedFlashcards = async (target)=>{
-        
-        if (plan === "free"){
-            setNumflashcards(Math.min(target, 10))
-        } 
+        if (!subscribed) {
+            setNumflashcards(Math.max(Math.min(target, generationUses),1))
+        } else {
+            setNumflashcards(Math.max(target,1))
+        }
     }
 
-    const [prompt, setPrompt] = useState("")
     const generateFlashcards = async () => {
         if (!prompt.trim()) return;
+        if (!subscribed && generationUses === 0) return;
+        if (!subscribed && generationUses - numFlashcards <= 0) return
 
         setIsLoading(true);
-        let API_URL = "https://api.openai.com/v1/chat/completions"
+        // let API_URL = "https://api.openai.com/v1/chat/completions"
         try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': "Bearer " +  process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+            // const response = await fetch(API_URL, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': "Bearer " +  process.env.OPENAI_API_KEY,
+            //     },
+            //     body: JSON.stringify({
+            //         model: "gpt-3.5-turbo",
+            //         messages: [
+            //             { role: "system", content: "You are a helpful assistant that creates flashcards." },
+            //             {
+            //                 role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object formated as 
+            //                 {
+            //                     "front": string,
+            //                     "back": string
+            //                 }
+            //                 place commas in between each json card and store in in an array. NEVER USE forward ticks and JSON inside of the response PLEASE`
+            //             }
+            //         ],
+            //         temperature: 1.0,
+            //     }),
+            // });
+
+            const response = await fetch("/api/generate",{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
                 },
-                body: JSON.stringify({
-                    model: "gpt-3.5-turbo",
-                    messages: [
-                        { role: "system", content: "You are a helpful assistant that creates flashcards." },
-                        {
-                            role: "user", content: `Create ${numFlashcards} flashcards about ${prompt}. Format each flashcard as a JSON object formated as 
-                            {
-                                "front": string,
-                                "back": string
-                            }
-                            place commas in between each json card and store in in an array. NEVER USE forward ticks and JSON inside of the response PLEASE`
-                        }
-                    ],
-                    temperature: 1.0,
-                }),
-            });
+                body:JSON.stringify({
+                    numFlashcards:numFlashcards,
+                    message:{role:"user",content:prompt}
+                })
+            })
             
             if (!response.ok) {
                 throw new Error('Failed to generate flashcards');
             }
-
             const data = await response.json();
-            const generatedFlashcards = JSON.parse(data.choices[0].message.content);
+            const generatedFlashcards = JSON.parse(data.completion).flashcards;
+            // console.log(generateFlashcards) 
             setFlashcards([...flashcards, ...generatedFlashcards])
+            if (!subscribed){
+                setGenerationUses(generationUses - numFlashcards)
+                updateGenerationUses()
+            }
             setAIOpen(false); setPrompt(""); setNumflashcards(1);
         } catch (error) {
             console.error('Error generating flashcards:', error);
